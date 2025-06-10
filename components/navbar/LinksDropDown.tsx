@@ -12,22 +12,11 @@ import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import UserIcon from "./UserIcon";
 import SingOutLink from "./SingOutLink";
-
-type NavLink = {
-  href: string;
-  label: string;
-};
-
-export const links: NavLink[] = [
-  { href: "/", label: "home" },
-  { href: "/about", label: "about" },
-  { href: "/products", label: "products" },
-  { href: "/favorites", label: "favorites" },
-  { href: "/cart", label: "cart" },
-  { href: "/orders", label: "orders" },
-];
-
+import { links } from "@/utils/links";
+import { auth } from "@clerk/nextjs/server";
 const LinksDropDown = () => {
+  const { userId } = auth();
+  const isAdmin = userId == process.env.ADMIN_USER_ID;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -52,13 +41,19 @@ const LinksDropDown = () => {
         </SignedOut>
 
         <SignedIn>
-          {links.map((item) => (
-            <DropdownMenuItem key={item.href}>
-              <Link href={item.href} className="capitalize w-full">
-                {item.label}
-              </Link>
-            </DropdownMenuItem>
-          ))}
+          {links.map((item) => {
+            if (item.label === "dashboard" && !isAdmin) return null;
+            return (
+              <>
+                <DropdownMenuItem key={item.href}>
+                  <Link href={item.href} className="capitalize w-full">
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            );
+          })}
+
           <DropdownMenuSeparator />
           <DropdownMenu>
             <SingOutLink />
